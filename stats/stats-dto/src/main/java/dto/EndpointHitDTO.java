@@ -1,23 +1,21 @@
 package dto;
 
 import lombok.Data;
-import validation.Create;
-import validation.Update;
 
 import javax.validation.constraints.NotBlank;
 
 @Data
 public class EndpointHitDTO {
 
-    @NotBlank(groups = {Create.class, Update.class})
+    @NotBlank
     private String app;
 
-    @NotBlank(groups = {Create.class, Update.class})
+    @NotBlank
     private String uri;
 
-    @NotBlank(groups = {Create.class, Update.class})
+    @NotBlank
     private String ip;
 
-    @NotBlank(groups = {Create.class, Update.class})
+    @NotBlank
     private String timestamp;
 }
