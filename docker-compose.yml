@@ -1,9 +1,10 @@
 services:
   stats-server:
-    container_name: stats-server
+    build: stats-server
+    image: explore-with-me-stats-server
+    container_name: explore-with-me-stats-server
     ports:
       - "9090:9090"
-    build: stats-server
 
   stats-db:
     image: postgres:16.1
