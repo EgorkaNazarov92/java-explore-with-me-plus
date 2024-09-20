@@ -3,6 +3,7 @@ services:
     container_name: stats-server
     ports:
       - "9090:9090"
+    build: stats-server
 
   stats-db:
     image: postgres:16.1
