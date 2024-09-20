@@ -20,7 +20,6 @@ class HitServiceImplTest {
     @MockBean
     private HitRepository hitRepository;
 
-    @Autowired
     private HitService hitService;
 
     private static final Hit hit = Hit.builder()
