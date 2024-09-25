@@ -55,4 +55,21 @@ public class EventMapper {
 		}
 		return dtos;
 	}
+
+	public static Event mapUpdateDtoToEvent(UpdateEventDto dto){
+		Event event = new Event();
+		event.setAnnotation(dto.getAnnotation());
+		event.setCreatedOn(LocalDateTime.now());
+		event.setDescription(dto.getDescription());
+		LocalDateTime dateTime = dto.getEventDate();
+		event.setEventDate(dateTime);
+		event.setPaid(dto.getPaid());
+		event.setParticipantLimit(dto.getParticipantLimit());
+		event.setRequestModeration(dto.getRequestModeration());
+		event.setTitle(dto.getTitle());
+		event.setCategory_id(dto.getCategory());
+		event.setLat(dto.getLocation().getLat());
+		event.setLon(dto.getLocation().getLon());
+		return event;
+	}
 }

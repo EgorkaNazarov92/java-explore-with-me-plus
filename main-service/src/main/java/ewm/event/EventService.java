@@ -14,8 +14,6 @@ public interface EventService {
 
 	EventDto createEvent(Long userId, CreateEventDto eventDto);
 
-	EventDto updateEvent(Long userId, UpdateEventDto eventDto);
-
 	List<EventDto> adminGetEvents(AdminGetEventRequestDto requestParams);
 
 	EventDto adminChangeEvent(Long eventId, UpdateEventDto eventDto);

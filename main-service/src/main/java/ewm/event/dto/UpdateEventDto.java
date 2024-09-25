@@ -2,7 +2,6 @@ package ewm.event.dto;
 
 import ewm.event.model.StateAction;
 
-import ewm.event.constant.StateAction;
 import lombok.Builder;
 import lombok.Data;
 
