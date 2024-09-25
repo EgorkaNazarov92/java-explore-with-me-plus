@@ -1,5 +1,7 @@
 package ewm.event.dto;
 
+import ewm.category.dto.CategoryDto;
+import ewm.user.dto.UserDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,14 +17,14 @@ public class EventDto {
     private String description;
     private LocalDateTime eventDate;
     private Boolean paid;
-    private Long participantLimit;
+    private Integer participantLimit;
     private LocalDateTime pablishedOn;
     private Boolean requestModeration;
     private String state;
     private String title;
     private Long views;
+    private CategoryDto category;
+    private UserDto initiator;
+    private LocationDto location;
 
-//    private Location location;
-    //User initiator
-    //Category category
 }
