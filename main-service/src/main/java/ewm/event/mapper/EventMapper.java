@@ -1,10 +1,14 @@
 package ewm.event.mapper;
 
+import ewm.category.dto.CategoryDto;
+import ewm.category.mapper.CategoryMapper;
+import ewm.category.model.Category;
 import ewm.event.dto.CreateEventDto;
 import ewm.event.dto.EventDto;
 import ewm.event.dto.LocationDto;
 import ewm.event.dto.UpdateEventDto;
 import ewm.event.model.Event;
+import ewm.user.mapper.UserMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +30,6 @@ public class EventMapper {
 		event.setParticipantLimit(dto.getParticipantLimit());
 		event.setRequestModeration(dto.getRequestModeration());
 		event.setTitle(dto.getTitle());
-		event.setCategory_id(dto.getCategory());
 		event.setLat(dto.getLocation().getLat());
 		event.setLon(dto.getLocation().getLon());
 		return event;
@@ -44,6 +47,8 @@ public class EventMapper {
 				.state(event.getState())
 				.participantLimit(event.getParticipantLimit())
 				.location(LocationDto.builder().lat(event.getLat()).lon(event.getLon()).build())
+				.category(CategoryMapper.INSTANCE.categoryToCategoryDto(event.getCategory()))
+				.initiator(UserMapper.mapToUserDto(event.getInitiator()))
 				.build();
 		return dto;
 	}
@@ -67,7 +72,6 @@ public class EventMapper {
 		event.setParticipantLimit(dto.getParticipantLimit());
 		event.setRequestModeration(dto.getRequestModeration());
 		event.setTitle(dto.getTitle());
-		event.setCategory_id(dto.getCategory());
 		event.setLat(dto.getLocation().getLat());
 		event.setLon(dto.getLocation().getLon());
 		return event;

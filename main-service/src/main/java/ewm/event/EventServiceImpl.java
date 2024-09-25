@@ -55,8 +55,10 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventDto createEvent(Long userId, CreateEventDto eventDto) {
         User user = getUser(userId);
+		Category category = getCategory(eventDto.getCategory());
         Event event = EventMapper.mapCreateDtoToEvent(eventDto);
-        event.setInitiatorId(userId);
+        event.setInitiator(user);
+		event.setCategory(category);
         Event newEvent = repository.save(event);
 
         return eventToDto(event, user);
@@ -65,8 +67,10 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventDto updateEvent(Long userId, UpdateEventDto eventDto, Long eventId) {
         User user = getUser(userId);
+		Category category = getCategory(eventDto.getCategory());
         Event event = EventMapper.mapUpdateDtoToEvent(eventDto);
         event.setId(eventId);
+		event.setCategory(category);
         Optional<Event> newEvent = repository.findById(eventId);
         if(newEvent.isEmpty()){
             throw new NotFoundException("Event not found");
@@ -93,8 +97,8 @@ public class EventServiceImpl implements EventService {
         if (event.getTitle() != null && !event.getTitle().isBlank()){
             newEvent.get().setTitle(event.getTitle());
         }
-        if(event.getCategory_id()!=null){
-            newEvent.get().setCategory_id(event.getCategory_id());
+        if(event.getCategory()!=null){
+            newEvent.get().setCategory(event.getCategory());
         }
         if(event.getLat() != null){
             newEvent.get().setLat(event.getLat());
@@ -132,11 +136,6 @@ public class EventServiceImpl implements EventService {
 
 	private EventDto eventToDto(Event event, User user) {
 		EventDto dto = EventMapper.mapEventToEventDto(event);
-		dto.setInitiator(UserMapper.mapToUserDto(user));
-		Optional<Category> category = categoryRepository.findById(event.getCategory_id());
-		if (category.isPresent()) {
-			dto.setCategory(CategoryMapper.INSTANCE.categoryToCategoryDto(category.get()));
-		}
 
 		return dto;
 	}
@@ -195,8 +194,16 @@ public class EventServiceImpl implements EventService {
     private User getUser(Long userId){
         Optional<User> user =userRepository.findById(userId);
         if(user.isEmpty()){
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("Пользователь не найден");
         }
         return user.get();
     }
+
+	private Category getCategory(Long categoryId){
+		Optional<Category> category = categoryRepository.findById(categoryId);
+		if(category.isEmpty()){
+			throw new NotFoundException("Категория не найдена");
+		}
+		return category.get();
+	}
 }

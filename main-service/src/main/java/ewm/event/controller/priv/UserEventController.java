@@ -4,11 +4,15 @@ import ewm.event.EventService;
 import ewm.event.dto.CreateEventDto;
 import ewm.event.dto.EventDto;
 import ewm.event.dto.UpdateEventDto;
+import ewm.event.validate.EventValidate;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "/users/{userId}/events")
 @RequiredArgsConstructor
@@ -30,7 +34,8 @@ public class UserEventController {
 
 	@PostMapping
 	EventDto createEvent(@PathVariable Long userId,
-						 @RequestBody CreateEventDto event) {
+						 @Valid @RequestBody CreateEventDto event) {
+		EventValidate.EventDateValidate(event, log);
 		return service.createEvent(userId, event);
 	}
 

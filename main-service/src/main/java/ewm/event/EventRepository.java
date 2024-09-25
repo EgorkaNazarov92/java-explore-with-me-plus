@@ -15,9 +15,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	Optional<Event> findByIdAndInitiatorId(Long id, long initiatorId);
 
 	@Query("SELECT e FROM Event AS e " +
-			"WHERE ((:users) IS NULL OR e.initiatorId IN :users) " +
+			"WHERE ((:users) IS NULL OR e.initiator.id IN :users) " +
 			"AND ((:states) IS NULL OR e.state IN :states) " +
-			"AND ((:categories) IS NULL OR e.category_id IN :categories) " +
+			"AND ((:categories) IS NULL OR e.category.id IN :categories) " +
 			"AND ((cast(:rangeStart as timestamp) IS NULL OR e.eventDate >= :rangeStart) " +
 			"AND ((cast(:rangeEnd as timestamp) IS NULL OR e.eventDate <= :rangeEnd)))")
 	List<Event> findEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,

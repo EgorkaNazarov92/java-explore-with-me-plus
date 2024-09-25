@@ -1,6 +1,8 @@
 package ewm.event.model;
 
+import ewm.category.model.Category;
 import ewm.event.dto.LocationDto;
+import ewm.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -8,6 +10,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 import java.time.LocalDateTime;
 
 @Table(name = "events")
+//@SecondaryTable(name = "categories")
 @Entity
 @Getter
 @Setter
@@ -29,10 +32,18 @@ public class Event {
     private Boolean requestModeration;
     private String state;
     private String title;
-    @Column(name = "category_id")
-    private Long category_id;
-    @Column(name = "user_id")
-    private Long initiatorId;
+
+    @ManyToOne
+    @JoinColumn(name="category_id")
+    private Category category;
+//
+//    @Column(name = "user_id")
+//    private Long initiatorId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User initiator;
+
     private Double lat;
     private Double lon;
 }
