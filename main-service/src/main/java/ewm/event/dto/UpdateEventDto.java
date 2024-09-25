@@ -1,21 +1,24 @@
 package ewm.event.dto;
 
-import ewm.event.EventService;
+import ewm.event.model.StateAction;
+
 import ewm.event.constant.StateAction;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class UpdateEventDto {
-    private String annotation;
-    private Long category;
-    private String description;
-    private String eventDate;
-    private LocationDto location;
-    private Boolean paid;
-    private Integer participantLimit;
-    private Boolean requestModeration;
-    private String title;
-    private StateAction stateAction;
+	protected String annotation;
+	protected Long category;
+	protected String description;
+	protected LocalDateTime eventDate;
+	protected LocationDto location;
+	protected Boolean paid;
+	protected Integer participantLimit;
+	protected Boolean requestModeration;
+	protected StateAction stateAction;
+	protected String title;
 }
