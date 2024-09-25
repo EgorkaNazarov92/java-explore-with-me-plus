@@ -3,6 +3,7 @@ package ewm.event.controller.priv;
 import ewm.event.EventService;
 import ewm.event.dto.CreateEventDto;
 import ewm.event.dto.EventDto;
+import ewm.event.dto.UpdateEventDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,13 @@ public class UserEventController {
 	EventDto createEvent(@PathVariable Long userId,
 						 @RequestBody CreateEventDto event) {
 		return service.createEvent(userId, event);
+	}
+
+	@PatchMapping("/{id}")
+	EventDto updateEvent (@PathVariable Long userId,
+						  @PathVariable Long id,
+						  @RequestBody UpdateEventDto event){
+		return service.updateEvent(userId,event, id);
 	}
 
 

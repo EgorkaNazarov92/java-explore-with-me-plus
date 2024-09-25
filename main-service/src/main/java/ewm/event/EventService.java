@@ -13,6 +13,6 @@ public interface EventService {
 
     EventDto createEvent(Long userId, CreateEventDto eventDto);
 
-    EventDto updateEvent(Long userId, UpdateEventDto eventDto);
+    EventDto updateEvent(Long userId, UpdateEventDto eventDto, Long eventId);
 
 }

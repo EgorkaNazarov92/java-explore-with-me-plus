@@ -30,45 +30,76 @@ public class EventServiceImpl implements  EventService{
 
     @Override
     public List<EventDto> getEvents(Long userId, Integer from, Integer size) {
-        Optional<User> user =userRepository.findById(userId);
-        if(user.isEmpty()){
-            throw new NotFoundException("User not found");
-        }
+        User user = getUser(userId);
         Pageable pageable = PageRequest.of(from, size);
         return repository.findByInitiatorId(userId,pageable).stream()
-                .map(x-> eventToDto(x, user.get()))
+                .map(x-> eventToDto(x, user))
                 .toList();
     }
 
     @Override
     public EventDto getEventById(Long userId, Long id) {
-        Optional<User> user =userRepository.findById(userId);
-        if(user.isEmpty()){
-            throw new NotFoundException("User not found");
-        }
+        User user = getUser(userId);
         Optional<Event> event = repository.findByIdAndInitiatorId(id,userId);
         if(event.isEmpty()){
             throw new NotFoundException("Event not found");
         }
-        return eventToDto(event.get(), user.get());
+        return eventToDto(event.get(), user);
     }
 
     @Override
     public EventDto createEvent(Long userId, CreateEventDto eventDto) {
-        Optional<User> user =userRepository.findById(userId);
-        if(user.isEmpty()){
-            throw new NotFoundException("User not found");
-        }
+        User user = getUser(userId);
         Event event = EventMapper.mapCreateDtoToEvent(eventDto);
         event.setInitiatorId(userId);
         Event newEvent = repository.save(event);
 
-        return eventToDto(event, user.get());
+        return eventToDto(event, user);
     }
 
     @Override
-    public EventDto updateEvent(Long userId, UpdateEventDto eventDto) {
-        return null;
+    public EventDto updateEvent(Long userId, UpdateEventDto eventDto, Long eventId) {
+        User user = getUser(userId);
+        Event event = EventMapper.mapUpdateDtoToEvent(eventDto);
+        event.setId(eventId);
+        Optional<Event> newEvent = repository.findById(eventId);
+        if(newEvent.isEmpty()){
+            throw new NotFoundException("Event not found");
+        }
+
+        if(event.getAnnotation() != null && !event.getAnnotation().isBlank()){
+            newEvent.get().setAnnotation(event.getAnnotation());
+        }
+        if(event.getDescription() != null && !event.getDescription().isBlank()){
+            newEvent.get().setDescription(event.getDescription());
+        }
+        if(event.getEventDate() != null){
+            newEvent.get().setEventDate(event.getEventDate());
+        }
+        if(event.getPaid()!=null){
+            newEvent.get().setPaid(event.getPaid());
+        }
+        if(event.getParticipantLimit() != null){
+            newEvent.get().setParticipantLimit(event.getParticipantLimit());
+        }
+        if(event.getRequestModeration()!=null){
+            newEvent.get().setRequestModeration(event.getRequestModeration());
+        }
+        if (event.getTitle() != null && !event.getTitle().isBlank()){
+            newEvent.get().setTitle(event.getTitle());
+        }
+        if(event.getCategory_id()!=null){
+            newEvent.get().setCategory_id(event.getCategory_id());
+        }
+        if(event.getLat() != null){
+            newEvent.get().setLat(event.getLat());
+        }
+        if(event.getLon() != null){
+            newEvent.get().setLon(event.getLon());
+        }
+        repository.save(newEvent.get());
+
+        return eventToDto(newEvent.get(), user);
     }
 
     private EventDto eventToDto(Event event, User user){
@@ -80,5 +111,13 @@ public class EventServiceImpl implements  EventService{
         }
 
         return dto;
+    }
+
+    private User getUser(Long userId){
+        Optional<User> user =userRepository.findById(userId);
+        if(user.isEmpty()){
+            throw new NotFoundException("User not found");
+        }
+        return user.get();
     }
 }
