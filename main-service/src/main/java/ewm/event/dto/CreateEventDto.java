@@ -24,7 +24,8 @@ public class CreateEventDto {
     @Builder.Default
     private Boolean paid = false;
     private Integer participantLimit;
-    private Boolean requestModeration;
+    @Builder.Default
+    private Boolean requestModeration = true;
     @NotBlank(message = "Заголовок события не может быть пустым")
     private String title;
 }

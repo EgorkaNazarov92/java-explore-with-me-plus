@@ -1,16 +1,13 @@
 package ewm.event.model;
 
 import ewm.category.model.Category;
-import ewm.event.dto.LocationDto;
 import ewm.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDateTime;
 
 @Table(name = "events")
-//@SecondaryTable(name = "categories")
 @Entity
 @Getter
 @Setter
@@ -30,15 +27,12 @@ public class Event {
     private Integer participantLimit;
     private LocalDateTime pablishedOn;
     private Boolean requestModeration;
-    private String state;
+    private EventState state;
     private String title;
 
     @ManyToOne
-    @JoinColumn(name="category_id")
+    @JoinColumn(name = "category_id")
     private Category category;
-//
-//    @Column(name = "user_id")
-//    private Long initiatorId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
