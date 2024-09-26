@@ -4,6 +4,7 @@ import ewm.event.EventService;
 import ewm.event.dto.AdminGetEventRequestDto;
 import ewm.event.dto.EventDto;
 import ewm.event.dto.UpdateEventDto;
+import ewm.event.validate.EventValidate;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class AdminEventController {
 	public EventDto adminChangeEvent(@PathVariable Long eventId,
 									 @RequestBody @Valid UpdateEventDto eventDto) {
 		log.info("Изменить событие eventId = {}, поля -> {}", eventId, eventDto);
+		EventValidate.UpdateEventDateValidate(eventDto, log);
 		return eventService.adminChangeEvent(eventId, eventDto);
 	}
 }

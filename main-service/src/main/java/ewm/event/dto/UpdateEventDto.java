@@ -3,6 +3,7 @@ package ewm.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import ewm.event.model.StateAction;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class UpdateEventDto {
 	protected LocalDateTime eventDate;
 	protected LocationDto location;
 	protected Boolean paid;
+	@PositiveOrZero
 	protected Integer participantLimit;
 	protected Boolean requestModeration;
 	protected StateAction stateAction;

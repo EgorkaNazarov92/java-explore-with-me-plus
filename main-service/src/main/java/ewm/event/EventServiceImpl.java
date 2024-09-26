@@ -99,6 +99,10 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto publicGetEvent(Long id) {
+        Event event = getEvent(id);
+        if(event.getState() != EventState.PUBLISHED){
+            throw new NotFoundException("Событие не найдено");
+        }
         return EventMapper.mapEventToEventDto(getEvent(id));
     }
 
