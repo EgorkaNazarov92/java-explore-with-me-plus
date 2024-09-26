@@ -45,6 +45,8 @@ public class UserEventController {
 	EventDto updateEvent(@PathVariable Long userId,
 						 @PathVariable Long eventId,
 						 @Valid @RequestBody UpdateEventDto event) {
+		EventValidate.UpdateEventDateValidate(event, log);
+		EventValidate.textLengthValidate(event, log);
 		return service.updateEvent(userId, event, eventId);
 	}
 

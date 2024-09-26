@@ -31,8 +31,10 @@ public class AdminGetEventRequestDto {
 	private LocalDateTime rangeEnd;
 
 	@PositiveOrZero
-	private int from;
+	@Builder.Default
+	private int from = 0;
 
 	@Positive
-	private int size;
+	@Builder.Default
+	private int size = 10;
 }

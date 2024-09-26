@@ -25,7 +25,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 								  LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable);
 
 	@Query("SELECT e FROM Event AS e " +
-			"WHERE ((:text) IS NULL " +
+			"WHERE ((:text IS NULL OR :text = '') " +
 			"OR UPPER(e.annotation) LIKE UPPER(CONCAT('%', :text, '%')) " +
 			"OR UPPER(e.description) LIKE UPPER(CONCAT('%', :text, '%'))) " +
 			"AND ((:categories) IS NULL OR e.category.id IN :categories) " +

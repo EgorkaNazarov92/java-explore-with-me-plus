@@ -58,6 +58,16 @@ public class EventServiceImpl implements EventService {
         User user = getUser(userId);
         Category category = getCategory(eventDto.getCategory());
         Event event = EventMapper.mapCreateDtoToEvent(eventDto);
+        if (event.getPaid() == null) {
+            event.setPaid(false);
+        }
+        if(event.getParticipantLimit() == null){
+            event.setParticipantLimit(0);
+        }
+        if(event.getRequestModeration() == null){
+            event.setRequestModeration(true);
+        }
+
         event.setInitiator(user);
         event.setCategory(category);
         event.setState(EventState.PENDING);
@@ -165,16 +175,18 @@ public class EventServiceImpl implements EventService {
             event.setParticipantLimit(updateEventDto.getParticipantLimit());
         if (updateEventDto.getTitle() != null)
             event.setTitle(updateEventDto.getTitle());
-        switch (updateEventDto.getStateAction()) {
-            case PUBLISH_EVENT:
-                event.setState(EventState.PUBLISHED);
-                break;
-            case CANCEL_REVIEW:
-                event.setState(EventState.CANCELED);
-                break;
-            case SEND_TO_REVIEW:
-                event.setState(EventState.PENDING);
-                break;
+        if(updateEventDto.getStateAction() != null) {
+            switch (updateEventDto.getStateAction()) {
+                case PUBLISH_EVENT:
+                    event.setState(EventState.PUBLISHED);
+                    break;
+                case CANCEL_REVIEW:
+                    event.setState(EventState.CANCELED);
+                    break;
+                case SEND_TO_REVIEW:
+                    event.setState(EventState.PENDING);
+                    break;
+            }
         }
         return event;
     }

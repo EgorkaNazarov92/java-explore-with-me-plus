@@ -4,6 +4,7 @@ import ewm.category.model.Category;
 import ewm.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -22,9 +23,10 @@ public class Event {
 	private String annotation;
 	@Column(name = "create_on")
 	private LocalDateTime createdOn;
-	@Column(columnDefinition = "VARCHAR(4000)")
+	@Column(columnDefinition = "VARCHAR(7000)")
 	private String description;
 	private LocalDateTime eventDate;
+	@ColumnDefault("false")
 	private Boolean paid;
 	private Integer participantLimit;
 	private LocalDateTime pablishedOn;
