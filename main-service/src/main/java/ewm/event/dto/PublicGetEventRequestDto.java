@@ -18,25 +18,25 @@ import java.util.List;
 @Builder
 public class PublicGetEventRequestDto {
 
-	private String text;
+    private String text;
 
-	private List<Long> categories;
+    private List<Long> categories;
 
-	private Boolean paid;
+    private Boolean paid;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime rangeStart;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime rangeStart;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime rangeEnd;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime rangeEnd;
 
-	private Boolean onlyAvailable;
+    private Boolean onlyAvailable;
 
-	private EventSort sort;
+    private EventSort sort;
 
-	@PositiveOrZero
-	private int from;
+    @PositiveOrZero
+    private int from;
 
-	@Positive
-	private int size;
+    @Positive
+    private int size = 10;
 }

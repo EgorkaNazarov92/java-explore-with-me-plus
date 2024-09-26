@@ -3,6 +3,7 @@ package ewm.event.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +24,7 @@ public class CreateEventDto {
     private LocationDto location;
     @Builder.Default
     private Boolean paid = false;
+    @PositiveOrZero
     private Integer participantLimit;
     @Builder.Default
     private Boolean requestModeration = true;

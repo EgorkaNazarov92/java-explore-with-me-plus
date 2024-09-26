@@ -4,6 +4,7 @@ import ewm.category.model.Category;
 import ewm.category.repository.CategoryRepository;
 import ewm.error.exception.ConflictExceprion;
 import ewm.error.exception.NotFoundException;
+import ewm.error.exception.ValidationException;
 import ewm.event.dto.AdminGetEventRequestDto;
 import ewm.event.dto.CreateEventDto;
 import ewm.event.dto.EventDto;
@@ -218,6 +219,9 @@ public class EventServiceImpl implements EventService {
             foundEvent.setPaid(eventDto.getPaid());
         }
         if (eventDto.getParticipantLimit() != null) {
+            if (eventDto.getParticipantLimit() < 0) {
+                throw new ValidationException("Participant limit cannot be negative");
+            }
             foundEvent.setParticipantLimit(eventDto.getParticipantLimit());
         }
         if (eventDto.getRequestModeration() != null) {
