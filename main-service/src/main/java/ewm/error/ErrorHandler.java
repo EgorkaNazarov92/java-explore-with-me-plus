@@ -1,5 +1,6 @@
 package ewm.error;
 
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.ExistException;
 import ewm.error.exception.NotFoundException;
 import ewm.error.model.ErrorResponse;
@@ -41,5 +42,13 @@ public class ErrorHandler {
                 "Произошла непредвиденная ошибка.",
                 e.getMessage()
         );
+    }
+
+    @ExceptionHandler({ConflictException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflictException(ConflictException e) {
+        return new ErrorResponse(HttpStatus.CONFLICT,
+                "Нарушение уникального ограничения",
+                e.getMessage());
     }
 }
