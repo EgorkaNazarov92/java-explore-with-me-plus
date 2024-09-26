@@ -15,29 +15,31 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String annotation;
-    @Column(name = "create_on")
-    private LocalDateTime createdOn;
-    private String description;
-    private LocalDateTime eventDate;
-    private Boolean paid;
-    private Integer participantLimit;
-    private LocalDateTime pablishedOn;
-    private Boolean requestModeration;
-    private EventState state;
-    private String title;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@Column(columnDefinition = "VARCHAR(4000)")
+	private String annotation;
+	@Column(name = "create_on")
+	private LocalDateTime createdOn;
+	@Column(columnDefinition = "VARCHAR(4000)")
+	private String description;
+	private LocalDateTime eventDate;
+	private Boolean paid;
+	private Integer participantLimit;
+	private LocalDateTime pablishedOn;
+	private Boolean requestModeration;
+	private EventState state;
+	private String title;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private Category category;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User initiator;
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User initiator;
 
-    private Double lat;
-    private Double lon;
+	private Double lat;
+	private Double lon;
 }

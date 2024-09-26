@@ -26,7 +26,7 @@ public class AdminEventController {
 		return eventService.adminGetEvents(requestParams);
 	}
 
-	@PatchMapping("/eventId")
+	@PatchMapping("/{eventId}")
 	public EventDto adminChangeEvent(@PathVariable Long eventId,
 									 @RequestBody @Valid UpdateEventDto eventDto) {
 		log.info("Изменить событие eventId = {}, поля -> {}", eventId, eventDto);

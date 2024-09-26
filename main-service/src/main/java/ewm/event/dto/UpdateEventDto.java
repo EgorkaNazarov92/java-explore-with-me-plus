@@ -1,18 +1,24 @@
 package ewm.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ewm.event.model.StateAction;
-
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+
 @Data
-@Builder
+@Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateEventDto {
 	protected String annotation;
 	protected Long category;
 	protected String description;
+	@JsonProperty("eventDate")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
 	protected LocalDateTime eventDate;
 	protected LocationDto location;
 	protected Boolean paid;

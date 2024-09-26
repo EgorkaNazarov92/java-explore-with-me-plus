@@ -1,6 +1,6 @@
 package ewm.event.dto;
 
-import ewm.event.model.EventState;
+import ewm.event.model.EventSort;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -16,19 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AdminGetEventRequestDto {
+public class PublicGetEventRequestDto {
 
-	private List<Long> users;
-
-	private List<EventState> states;
+	private String text;
 
 	private List<Long> categories;
+
+	private Boolean paid;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime rangeStart;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime rangeEnd;
+
+	private Boolean onlyAvailable;
+
+	private EventSort sort;
 
 	@PositiveOrZero
 	private int from;

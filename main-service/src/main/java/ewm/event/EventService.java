@@ -1,9 +1,6 @@
 package ewm.event;
 
-import ewm.event.dto.AdminGetEventRequestDto;
-import ewm.event.dto.CreateEventDto;
-import ewm.event.dto.EventDto;
-import ewm.event.dto.UpdateEventDto;
+import ewm.event.dto.*;
 
 import java.util.List;
 
@@ -18,6 +15,9 @@ public interface EventService {
 
 	EventDto adminChangeEvent(Long eventId, UpdateEventDto eventDto);
 
-    EventDto updateEvent(Long userId, UpdateEventDto eventDto, Long eventId);
+	EventDto updateEvent(Long userId, UpdateEventDto eventDto, Long eventId);
 
+	List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams);
+
+	EventDto publicGetEvent(Long id);
 }

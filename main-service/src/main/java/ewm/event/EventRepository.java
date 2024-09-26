@@ -1,6 +1,7 @@
 package ewm.event;
 
 import ewm.event.model.Event;
+import ewm.event.model.EventState;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +21,20 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 			"AND ((:categories) IS NULL OR e.category.id IN :categories) " +
 			"AND ((cast(:rangeStart as timestamp) IS NULL OR e.eventDate >= :rangeStart) " +
 			"AND ((cast(:rangeEnd as timestamp) IS NULL OR e.eventDate <= :rangeEnd)))")
-	List<Event> findEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
+	List<Event> findEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
 								  LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable);
+
+	@Query("SELECT e FROM Event AS e " +
+			"WHERE ((:text) IS NULL " +
+			"OR UPPER(e.annotation) LIKE UPPER(CONCAT('%', :text, '%')) " +
+			"OR UPPER(e.description) LIKE UPPER(CONCAT('%', :text, '%'))) " +
+			"AND ((:categories) IS NULL OR e.category.id IN :categories) " +
+			"AND ((:paid) IS NULL OR e.paid = :paid) " +
+			"AND ( e.eventDate >= :rangeStart) " +
+			"AND ( e.eventDate <= :rangeEnd) " +
+			"AND ( e.state = :eventState) " +
+			"AND ((:onlyAvailable) IS FALSE OR (e.participantLimit = 0))")
+	List<Event> findEventsPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+								 LocalDateTime rangeEnd, EventState eventState,
+								 Boolean onlyAvailable, Pageable pageable);
 }

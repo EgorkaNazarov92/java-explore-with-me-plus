@@ -8,6 +8,7 @@ import ewm.event.validate.EventValidate;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class UserEventController {
 		return service.getEventById(userId, id);
 	}
 
+	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	EventDto createEvent(@PathVariable Long userId,
 						 @Valid @RequestBody CreateEventDto event) {
@@ -39,11 +41,11 @@ public class UserEventController {
 		return service.createEvent(userId, event);
 	}
 
-	@PatchMapping("/{id}")
-	EventDto updateEvent (@PathVariable Long userId,
-						  @PathVariable Long id,
-						  @RequestBody UpdateEventDto event){
-		return service.updateEvent(userId,event, id);
+	@PatchMapping("/{eventId}")
+	EventDto updateEvent(@PathVariable Long userId,
+						 @PathVariable Long eventId,
+						 @RequestBody UpdateEventDto event) {
+		return service.updateEvent(userId, event, eventId);
 	}
 
 
