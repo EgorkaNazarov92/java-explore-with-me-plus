@@ -71,8 +71,10 @@ public class EventMapper {
         event.setParticipantLimit(dto.getParticipantLimit());
         event.setRequestModeration(dto.getRequestModeration());
         event.setTitle(dto.getTitle());
-        event.setLat(dto.getLocation().getLat());
-        event.setLon(dto.getLocation().getLon());
+        if (dto.getLocation() != null) {
+            event.setLat(dto.getLocation().getLat());
+            event.setLon(dto.getLocation().getLon());
+        }
         return event;
     }
 }
