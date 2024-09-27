@@ -10,7 +10,7 @@ public interface CompilationService {
 
     CompilationDto create(NewCompilationDto newCompilationDto);
 
-    List<CompilationDto> getAll();
+    List<CompilationDto> getAll(Integer from, Integer size);
 
     CompilationDto getById(Long compId);
 

@@ -4,6 +4,7 @@ import ewm.error.exception.ConflictException;
 import ewm.error.exception.NotFoundException;
 import ewm.event.EventRepository;
 import ewm.event.model.Event;
+import ewm.event.model.EventState;
 import ewm.request.model.ParticipationRequest;
 import ewm.request.repository.RequestRepository;
 import ewm.user.model.User;
@@ -35,6 +36,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("Инициатор не может участвовать в своём событии");
         }
 
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ConflictException("Нельзя подать заявку на неопубликованое событие");
+        }
+
         if (event.getParticipantLimit() != 0 &&
                 event.getConfirmedRequests() >= event.getParticipantLimit()) {
             throw new ConflictException("Лимит участников на событие исчерпан");
@@ -43,11 +48,15 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         if (requestRepository.existsByRequesterAndEvent(userId, eventId)) {
             throw new ConflictException("Повторный запрос на участие не разрешен");
         }
+        String status = "PENDING";
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            status = "CONFIRMED";
+        }
 
         ParticipationRequest newRequest = ParticipationRequest.builder()
                 .requester(userId)
                 .event(eventId)
-                .status(event.getRequestModeration() ? "CONFIRMED" : "PENDING")
+                .status(status)
                 .created(LocalDateTime.now())
                 .build();
 

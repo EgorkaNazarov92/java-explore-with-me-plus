@@ -11,6 +11,8 @@ import ewm.event.EventRepository;
 import ewm.event.model.Event;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +47,9 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public List<CompilationDto> getAll() {
-        List<Compilation> compilations = compilationRepository.findAll();
+    public List<CompilationDto> getAll(Integer from , Integer size) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<Compilation> compilations = compilationRepository.findAll(pageable).stream().toList();
         return compilations.stream()
                 .map(compilationMapper::compilationToCompilationDto)
                 .collect(Collectors.toList());
