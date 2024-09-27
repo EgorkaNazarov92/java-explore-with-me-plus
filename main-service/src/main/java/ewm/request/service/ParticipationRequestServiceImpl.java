@@ -81,7 +81,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("Пользователь не может отменить чужой запрос");
         }
 
-        request.setStatus("CANCELLED");
+        request.setStatus("CANCELED");
         return requestRepository.save(request);
     }
 }
