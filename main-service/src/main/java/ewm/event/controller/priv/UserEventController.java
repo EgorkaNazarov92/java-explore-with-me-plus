@@ -41,7 +41,7 @@ public class UserEventController {
 	@PostMapping
 	EventDto createEvent(@PathVariable Long userId,
 						 @Valid @RequestBody CreateEventDto event) {
-		EventValidate.EventDateValidate(event, log);
+		EventValidate.eventDateValidate(event, log);
 		return service.createEvent(userId, event);
 	}
 
@@ -49,7 +49,7 @@ public class UserEventController {
 	EventDto updateEvent(@PathVariable Long userId,
 						 @PathVariable Long eventId,
 						 @Valid @RequestBody UpdateEventDto event) {
-		EventValidate.UpdateEventDateValidate(event, log);
+		EventValidate.updateEventDateValidate(event, log);
 		EventValidate.textLengthValidate(event, log);
 		return service.updateEvent(userId, event, eventId);
 	}

@@ -27,7 +27,7 @@ public class Event {
 	private LocalDateTime eventDate;
 	private Boolean paid;
 	private Integer participantLimit;
-	private LocalDateTime pablishedOn;
+	private LocalDateTime publishedOn;
 	private Boolean requestModeration;
 	private EventState state;
 	private String title;
