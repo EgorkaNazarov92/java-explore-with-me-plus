@@ -1,9 +1,7 @@
 package ewm.event.controller.priv;
 
 import ewm.event.EventService;
-import ewm.event.dto.CreateEventDto;
-import ewm.event.dto.EventDto;
-import ewm.event.dto.UpdateEventDto;
+import ewm.event.dto.*;
 import ewm.event.validate.EventValidate;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -52,6 +50,13 @@ public class UserEventController {
 		EventValidate.updateEventDateValidate(event, log);
 		EventValidate.textLengthValidate(event, log);
 		return service.updateEvent(userId, event, eventId);
+	}
+
+	@PatchMapping("/{eventId}/requests")
+	EventRequestStatusUpdateResultDto updatStatusRequest(@PathVariable Long userId,
+														 @PathVariable Long eventId,
+														 @RequestBody EventRequestStatusUpdateRequestDto dto){
+		return service.updatStatusRequest(userId, eventId,dto);
 	}
 
 

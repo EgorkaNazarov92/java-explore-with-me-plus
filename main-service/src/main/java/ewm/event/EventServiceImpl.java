@@ -9,7 +9,11 @@ import ewm.event.dto.*;
 import ewm.event.mapper.EventMapper;
 import ewm.event.model.Event;
 import ewm.event.model.EventState;
+import ewm.event.model.RequestStatus;
 import ewm.event.model.StateAction;
+import ewm.request.mapper.ParticipationRequestMapper;
+import ewm.request.model.ParticipationRequest;
+import ewm.request.repository.RequestRepository;
 import ewm.statistics.service.StatisticsService;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
@@ -31,6 +35,7 @@ public class EventServiceImpl implements EventService {
 	private final UserRepository userRepository;
 	private final CategoryRepository categoryRepository;
 	private final StatisticsService statisticsService;
+	private final RequestRepository requestRepository;
 
 	private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
 
@@ -315,5 +320,58 @@ public class EventServiceImpl implements EventService {
 				.map(eventId -> repository.findById(eventId)
 						.orElseThrow(() -> new EntityNotFoundException("Событие с id= " + eventId + " не найдено")))
 				.collect(Collectors.toList());
+	}
+
+	public EventRequestStatusUpdateResultDto updatStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequestDto request){
+		Optional<Event> event = repository.findById(eventId);
+		if(event.isEmpty()){
+			throw new NotFoundException("Событие не найдено");
+		}
+
+		List<ParticipationRequest> requestList = requestRepository.findAllById(Arrays.stream(request.getRequestIds()).toList());
+		List<ParticipationRequest> fullRequestList = requestRepository.findByEvent(eventId);
+
+		if(RequestStatus.valueOf(request.getStatus()) == RequestStatus.REJECTED){
+
+			requestList.stream()
+					.forEach(x->{
+						if(RequestStatus.valueOf(x.getStatus()) != RequestStatus.PENDING){
+							throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
+						}
+						x.setStatus(RequestStatus.REJECTED.toString());
+						requestRepository.save(x);
+					});
+		}
+		if(RequestStatus.valueOf(request.getStatus()) == RequestStatus.REJECTED){
+			int confirmedRequestsCount = fullRequestList.stream()
+					.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.CONFIRMED)
+					.toList()
+					.size();
+			requestList.stream()
+					.forEach(x -> {
+						if(RequestStatus.valueOf(x.getStatus()) != RequestStatus.PENDING){
+							throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
+						}
+						if(requestRepository.findByEvent(eventId).size() >= event.get().getParticipantLimit()){
+							x.setStatus(RequestStatus.REJECTED.toString());
+						}else {
+							x.setStatus(RequestStatus.CONFIRMED.toString());
+						}
+						requestRepository.save(x);
+					});
+		}
+
+		fullRequestList = requestRepository.findByEvent(eventId);
+		EventRequestStatusUpdateResultDto result = new EventRequestStatusUpdateResultDto();
+		result.setConfirmedRequests(fullRequestList.stream()
+				.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.CONFIRMED)
+				.map(ParticipationRequestMapper.INSTANCE::participationRequestToParticipationRequestDto)
+				.toList());
+		result.setRejectedRequests(fullRequestList.stream()
+				.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.REJECTED)
+				.map(ParticipationRequestMapper.INSTANCE::participationRequestToParticipationRequestDto)
+				.toList());
+
+		return result;
 	}
 }
