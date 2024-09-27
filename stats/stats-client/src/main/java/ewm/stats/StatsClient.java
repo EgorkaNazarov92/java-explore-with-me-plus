@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import java.util.Map;
+
 @Service
 public class StatsClient extends BaseClient {
 
@@ -27,6 +29,29 @@ public class StatsClient extends BaseClient {
 	}
 
 	public ResponseEntity<Object> getStats(StatsRequestDTO headersDto) {
-		return get("/stats", headersDto);
+		Map<String, Object> params = Map.of(
+				"start", headersDto.getStart(),
+				"end", headersDto.getEnd(),
+				"unique", headersDto.getUnique()
+		);
+		return get("/stats" + getUrlParams(headersDto), params);
+	}
+
+	private String getUrlParams(StatsRequestDTO headersDto) {
+
+		String urls = String.join(",", headersDto.getUris());
+		StringBuilder sb = new StringBuilder("?");
+		return sb.append(getKeyValueUrl("start", headersDto.getStart()))
+				.append("&")
+				.append(getKeyValueUrl("end", headersDto.getEnd()))
+				.append("&")
+				.append(getKeyValueUrl("uris", urls))
+				.append("&")
+				.append(getKeyValueUrl("unique", headersDto.getUnique()))
+				.toString();
+	}
+
+	private String getKeyValueUrl(String key, Object value) {
+		return key + "=" + value;
 	}
 }

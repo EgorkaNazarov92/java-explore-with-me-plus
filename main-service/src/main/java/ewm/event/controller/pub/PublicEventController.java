@@ -23,16 +23,14 @@ public class PublicEventController {
 	private final EventService eventService;
 
 	@GetMapping
-	public List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams) {
+	public List<EventDto> publicGetEvents(HttpServletRequest request, PublicGetEventRequestDto requestParams) {
 		log.info("Получить события, согласно устловиям -> {}", requestParams);
-		return eventService.publicGetEvents(requestParams);
+		return eventService.publicGetEvents(requestParams, request);
 	}
 
 	@GetMapping("/{id}")
 	EventDto publicGetEvent(@PathVariable Long id,
 							HttpServletRequest request) {
-		String ip = request.getRemoteAddr();
-		String uri = request.getRequestURI();
-		return eventService.publicGetEvent(id, ip, uri);
+		return eventService.publicGetEvent(id, request);
 	}
 }

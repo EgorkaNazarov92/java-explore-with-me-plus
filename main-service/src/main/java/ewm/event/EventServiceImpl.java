@@ -2,7 +2,6 @@ package ewm.event;
 
 import ewm.category.model.Category;
 import ewm.category.repository.CategoryRepository;
-import ewm.dto.EndpointHitDTO;
 import ewm.error.exception.ConflictExceprion;
 import ewm.error.exception.NotFoundException;
 import ewm.error.exception.ValidationException;
@@ -11,18 +10,21 @@ import ewm.event.mapper.EventMapper;
 import ewm.event.model.Event;
 import ewm.event.model.EventState;
 import ewm.event.model.StateAction;
-import ewm.stats.StatsClient;
+import ewm.statistics.service.StatisticsService;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class EventServiceImpl implements EventService {
 	private final EventRepository repository;
 	private final UserRepository userRepository;
 	private final CategoryRepository categoryRepository;
-	private final StatsClient statsClient;
+	private final StatisticsService statisticsService;
 
 	private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
 
@@ -50,13 +52,6 @@ public class EventServiceImpl implements EventService {
 		if (event.isEmpty()) {
 			throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
 		}
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		statsClient.saveHit(EndpointHitDTO.builder()
-				.ip(ip)
-				.uri(uri)
-				.timestamp(dtf.format(LocalDateTime.now()))
-				.app("ewm-main-service")
-				.build());
 		return eventToDto(event.get());
 	}
 
@@ -99,11 +94,15 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams) {
+	public List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams,
+										  HttpServletRequest request) {
 		LocalDateTime start = (requestParams.getRangeStart() == null) ?
 				LocalDateTime.now() : requestParams.getRangeStart();
 		LocalDateTime end = (requestParams.getRangeEnd() == null) ?
 				LocalDateTime.now().plusYears(10) : requestParams.getRangeEnd();
+
+		if (start.isAfter(end))
+			throw new ValidationException("Дата окончания, должна быть больше даты старта.");
 		List<Event> events = repository.findEventsPublic(
 				requestParams.getText(),
 				requestParams.getCategories(),
@@ -115,23 +114,35 @@ public class EventServiceImpl implements EventService {
 				PageRequest.of(requestParams.getFrom() / requestParams.getSize()
 						, requestParams.getSize())
 		);
+
+		statisticsService.saveStats(request);
+		if (!events.isEmpty()) {
+			LocalDateTime oldestEventPublishedOn = events.stream()
+					.min(Comparator.comparing(Event::getPublishedOn)).map(Event::getPublishedOn).stream()
+					.findFirst().orElseThrow();
+			List<String> uris = getListOfUri(events, request.getRequestURI());
+
+			Map<Long, Long> views = statisticsService.getStats(oldestEventPublishedOn, LocalDateTime.now(), uris);
+			events
+					.stream()
+					.peek(event -> event.setViews(views.get(event.getId())));
+			events = repository.saveAll(events);
+		}
 		return EventMapper.mapToEventDto(events);
 	}
 
 	@Override
-	public EventDto publicGetEvent(Long id, String ip, String uri) {
+	public EventDto publicGetEvent(Long id, HttpServletRequest request) {
 		Event event = getEvent(id);
 		if (event.getState() != EventState.PUBLISHED) {
 			throw new NotFoundException("Событие не найдено");
 		}
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		statsClient.saveHit(EndpointHitDTO.builder()
-				.ip(ip)
-				.uri(uri)
-				.timestamp(dtf.format(LocalDateTime.now()))
-				.app("ewm-main-service")
-				.build());
-		return EventMapper.mapEventToEventDto(getEvent(id));
+		statisticsService.saveStats(request);
+		Long views = statisticsService.getStats(
+				event.getPublishedOn(), LocalDateTime.now(), List.of(request.getRequestURI())).get(id);
+		event.setViews(views);
+		event = repository.save(event);
+		return EventMapper.mapEventToEventDto(event);
 	}
 
 	@Override
@@ -198,6 +209,7 @@ public class EventServiceImpl implements EventService {
 			switch (updateEventDto.getStateAction()) {
 				case PUBLISH_EVENT:
 					event.setState(EventState.PUBLISHED);
+					event.setPublishedOn(LocalDateTime.now());
 					break;
 				case CANCEL_REVIEW:
 					event.setState(EventState.CANCELED);
@@ -284,5 +296,15 @@ public class EventServiceImpl implements EventService {
 				case SEND_TO_REVIEW -> foundEvent.setState(EventState.PENDING);
 			}
 		}
+	}
+
+
+	private List<String> getListOfUri(List<Event> events, String uri) {
+		return events.stream().map(Event::getId).map(id -> getUriForEvent(uri, id))
+				.collect(Collectors.toList());
+	}
+
+	private String getUriForEvent(String uri, Long eventId) {
+		return uri + "/" + eventId;
 	}
 }
