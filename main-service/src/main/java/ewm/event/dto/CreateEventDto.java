@@ -41,4 +41,6 @@ public class CreateEventDto {
 	@NotBlank(message = "Заголовок события не может быть пустым")
 	@Size(min = 3, max = 120, message = "Заголовок не может быть меньше 3 или больше 120 символов")
 	private String title;
+
+	private Long confirmedRequests;
 }

@@ -1,8 +1,11 @@
 package ewm.compilation.model;
 
 
+import ewm.event.model.Event;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "compilations")

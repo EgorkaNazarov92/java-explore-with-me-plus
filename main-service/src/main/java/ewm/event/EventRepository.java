@@ -4,6 +4,7 @@ import ewm.event.model.Event;
 import ewm.event.model.EventState;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	List<Event> findByInitiatorId(Long userId, Pageable pageable);
 
 	Optional<Event> findByIdAndInitiatorId(Long id, long initiatorId);
+
+	@Modifying
+	@Query("UPDATE Event e SET e.confirmedRequests = e.confirmedRequests + 1 WHERE e.id = :eventId")
+	void incrementConfirmedRequest (Long eventId);
 
 	@Query("SELECT e FROM Event AS e " +
 			"WHERE ((:users) IS NULL OR e.initiator.id IN :users) " +

@@ -2,9 +2,13 @@ package ewm.request.service;
 
 import ewm.error.exception.ConflictException;
 import ewm.error.exception.NotFoundException;
+import ewm.event.EventRepository;
+import ewm.event.model.Event;
 import ewm.request.model.ParticipationRequest;
 import ewm.request.repository.RequestRepository;
+import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +23,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Transactional
     public ParticipationRequest addParticipationRequest(Long userId, Long eventId) {
-        userRepository.findById(userId).orElseThrow(() ->
+        User user = userRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("Пользователь с id=" + userId + " не найден"));
 
-        eventRepository.findById(eventId).orElseThrow(() ->
+        Event event = eventRepository.findById(eventId).orElseThrow(() ->
                 new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
         if (event.getInitiator().getId().equals(userId)) {
@@ -31,7 +36,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
 
         if (event.getParticipantLimit() != 0 &&
-                event.getConfirmedRequests().size() >= event.getParticipantLimit()) {
+                event.getConfirmedRequests() >= event.getParticipantLimit()) {
             throw new ConflictException("Лимит участников на событие исчерпан");
         }
 
@@ -42,11 +47,15 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         ParticipationRequest newRequest = ParticipationRequest.builder()
                 .requester(userId)
                 .event(eventId)
-                .status(event.isRequestModeration() ? "PENDING" : "CONFIRMED")
+                .status(event.getRequestModeration() ? "CONFIRMED" : "PENDING")
                 .created(LocalDateTime.now())
                 .build();
 
-        return requestRepository.save(newRequest);
+        ParticipationRequest savedRequest = requestRepository.save(newRequest);
+        if (event.getRequestModeration()) {
+            eventRepository.incrementConfirmedRequest(eventId);
+        }
+        return savedRequest;
     }
 
     public List<ParticipationRequest> getUserRequests(Long userId) {

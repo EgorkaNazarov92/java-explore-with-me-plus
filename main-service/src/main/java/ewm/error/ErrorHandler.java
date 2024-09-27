@@ -1,6 +1,6 @@
 package ewm.error;
 
-import ewm.error.exception.ConflictExceprion;
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.ExistException;
 import ewm.error.exception.NotFoundException;
 import ewm.error.exception.ValidationException;
@@ -28,7 +28,7 @@ public class ErrorHandler {
     }
 
 
-    @ExceptionHandler({ExistException.class, ConflictExceprion.class})
+    @ExceptionHandler({ExistException.class, ConflictException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleParameterConflict(final Exception e) {
         return new ErrorResponse(HttpStatus.CONFLICT,

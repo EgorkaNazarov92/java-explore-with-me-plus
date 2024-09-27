@@ -1,6 +1,7 @@
 package ewm.user.mapper;
 
 import ewm.user.dto.UserDto;
+import ewm.user.dto.UserShortDto;
 import ewm.user.model.User;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -32,5 +33,12 @@ public class UserMapper {
 			dtos.add(mapToUserDto(user));
 		}
 		return dtos;
+	}
+
+	public static UserShortDto userToUserShortDto(User user) {
+		return UserShortDto.builder()
+				.id(user.getId())
+				.name(user.getName())
+				.build();
 	}
 }

@@ -5,7 +5,7 @@ import ewm.category.dto.CreateCategoryDto;
 import ewm.category.mapper.CategoryMapper;
 import ewm.category.model.Category;
 import ewm.category.repository.CategoryRepository;
-import ewm.error.exception.ConflictExceprion;
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.ExistException;
 import ewm.error.exception.NotFoundException;
 import ewm.event.EventRepository;
@@ -75,7 +75,7 @@ public class CategoryServiceImpl implements CategoryService {
 			throw new NotFoundException(CATEGORY_NOT_FOUND);
 		}
 		List<Event> events = eventRepository.findByCategoryId(id);
-		if (!events.isEmpty()) throw new ConflictExceprion("Есть привязанные события.");
+		if (!events.isEmpty()) throw new ConflictException("Есть привязанные события.");
 		categoryRepository.deleteById(id);
 	}
 }

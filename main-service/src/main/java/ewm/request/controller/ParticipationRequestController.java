@@ -1,5 +1,6 @@
 package ewm.request.controller;
 
+import ewm.error.exception.ValidationException;
 import ewm.request.dto.ParticipationRequestDto;
 import ewm.request.mapper.ParticipationRequestMapper;
 import ewm.request.model.ParticipationRequest;
@@ -23,7 +24,12 @@ public class ParticipationRequestController {
     @PostMapping
     public ResponseEntity<ParticipationRequestDto> addParticipationRequest(
             @PathVariable Long userId,
-            @RequestParam Long eventId) {
+            @RequestParam(required = false) Long eventId) {
+
+        if (eventId == null) {
+            throw new ValidationException("Параметр 'eventId' обязателен.");
+        }
+
         ParticipationRequest newRequest = participationRequestService.addParticipationRequest(userId, eventId);
         ParticipationRequestDto requestDto = participationRequestMapper.participationRequestToParticipationRequestDto(newRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(requestDto);

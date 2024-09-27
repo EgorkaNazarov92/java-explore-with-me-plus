@@ -31,6 +31,7 @@ public class Event {
 	private Boolean requestModeration;
 	private EventState state;
 	private String title;
+	private Long confirmedRequests;
 
 	@ManyToOne
 	@JoinColumn(name = "category_id")

@@ -2,7 +2,7 @@ package ewm.event;
 
 import ewm.category.model.Category;
 import ewm.category.repository.CategoryRepository;
-import ewm.error.exception.ConflictExceprion;
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.NotFoundException;
 import ewm.error.exception.ValidationException;
 import ewm.event.dto.*;
@@ -13,6 +13,7 @@ import ewm.event.model.StateAction;
 import ewm.statistics.service.StatisticsService;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -20,10 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,6 +71,7 @@ public class EventServiceImpl implements EventService {
 		event.setInitiator(user);
 		event.setCategory(category);
 		event.setState(EventState.PENDING);
+		event.setConfirmedRequests(0L);
 		Event newEvent = repository.save(event);
 		return eventToDto(newEvent);
 	}
@@ -86,7 +85,7 @@ public class EventServiceImpl implements EventService {
 		}
 		Event foundEvent = eventOptional.get();
 		if (foundEvent.getState() == EventState.PUBLISHED) {
-			throw new ConflictExceprion("Нельзя изменять изменять сообщение, которое опубликовано");
+			throw new ConflictException("Нельзя изменять изменять сообщение, которое опубликовано");
 		}
 		updateEventFields(eventDto, foundEvent);
 		Event saved = repository.save(foundEvent);
@@ -182,11 +181,11 @@ public class EventServiceImpl implements EventService {
 		if (action == null) return;
 		if (action.equals(StateAction.PUBLISH_EVENT)
 				&& !event.getState().equals(EventState.PENDING))
-			throw new ConflictExceprion("Опубликовать событие можно в статусе PENDING, а статус = "
+			throw new ConflictException("Опубликовать событие можно в статусе PENDING, а статус = "
 					+ event.getState());
 		if (action.equals(StateAction.REJECT_EVENT)
 				&& event.getState().equals(EventState.PUBLISHED))
-			throw new ConflictExceprion("Отменить событие можно только в статусе PUBLISHED, а статус = "
+			throw new ConflictException("Отменить событие можно только в статусе PUBLISHED, а статус = "
 					+ event.getState());
 	}
 
@@ -227,7 +226,7 @@ public class EventServiceImpl implements EventService {
 
 	private void checkEventDate(LocalDateTime dateTime) {
 		if (dateTime.isBefore(LocalDateTime.now().plusHours(1)))
-			throw new ConflictExceprion("Дата начала события меньше чем час " + dateTime);
+			throw new ConflictException("Дата начала события меньше чем час " + dateTime);
 	}
 
 	private User getUser(Long userId) {
@@ -261,7 +260,7 @@ public class EventServiceImpl implements EventService {
 		}
 		if (eventDto.getEventDate() != null) {
 			if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-				throw new ConflictExceprion("Дата начала события не может быть раньше чем через 2 часа");
+				throw new ConflictException("Дата начала события не может быть раньше чем через 2 часа");
 			}
 			foundEvent.setEventDate(eventDto.getEventDate());
 		}
@@ -306,5 +305,15 @@ public class EventServiceImpl implements EventService {
 
 	private String getUriForEvent(String uri, Long eventId) {
 		return uri + "/" + eventId;
+	}
+
+	public List<Event> mapEventIdsToEvents(List<Long> eventIds) {
+		if (eventIds == null) {
+			return Collections.emptyList();
+		}
+		return eventIds.stream()
+				.map(eventId -> repository.findById(eventId)
+						.orElseThrow(() -> new EntityNotFoundException("Событие с id= " + eventId + " не найдено")))
+				.collect(Collectors.toList());
 	}
 }

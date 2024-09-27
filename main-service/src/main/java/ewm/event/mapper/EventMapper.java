@@ -1,10 +1,7 @@
 package ewm.event.mapper;
 
 import ewm.category.mapper.CategoryMapper;
-import ewm.event.dto.CreateEventDto;
-import ewm.event.dto.EventDto;
-import ewm.event.dto.LocationDto;
-import ewm.event.dto.UpdateEventDto;
+import ewm.event.dto.*;
 import ewm.event.model.Event;
 import ewm.user.mapper.UserMapper;
 
@@ -12,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 public class EventMapper {
@@ -49,6 +47,7 @@ public class EventMapper {
 				.initiator(UserMapper.mapToUserDto(event.getInitiator()))
 				.requestModeration(event.getRequestModeration())
 				.views((event.getViews() == null) ? 0L : event.getViews())
+				.confirmedRequests(event.getConfirmedRequests())
 				.build();
 		return dto;
 	}
@@ -77,5 +76,19 @@ public class EventMapper {
 			event.setLon(dto.getLocation().getLon());
 		}
 		return event;
+	}
+
+	public static EventShortDto eventToEventShortDto(Event event) {
+		return EventShortDto.builder()
+				.id(event.getId())
+				.annotation(event.getAnnotation())
+				.category(CategoryMapper.INSTANCE.categoryToCategoryDto(event.getCategory()))
+				.confirmedRequests(event.getConfirmedRequests())
+				.eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.initiator(UserMapper.userToUserShortDto(event.getInitiator()))
+				.paid(event.getPaid())
+				.title(event.getTitle())
+				.views(Optional.ofNullable(event.getViews()).orElse(0L))
+				.build();
 	}
 }
