@@ -4,7 +4,6 @@ import ewm.category.model.Category;
 import ewm.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -43,4 +42,5 @@ public class Event {
 
 	private Double lat;
 	private Double lon;
+	private Long views;
 }
