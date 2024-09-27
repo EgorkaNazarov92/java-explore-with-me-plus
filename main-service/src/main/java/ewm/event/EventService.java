@@ -8,7 +8,7 @@ import java.util.List;
 public interface EventService {
 	List<EventDto> getEvents(Long userId, Integer from, Integer size);
 
-	EventDto getEventById(Long userId, Long Id, String ip, String uri);
+	EventDto getEventById(Long userId, Long eventId, String ip, String uri);
 
 	EventDto createEvent(Long userId, CreateEventDto eventDto);
 
@@ -20,5 +20,5 @@ public interface EventService {
 
 	List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams, HttpServletRequest request);
 
-	EventDto publicGetEvent(Long id, HttpServletRequest request);
+	EventDto publicGetEvent(Long eventId, HttpServletRequest request);
 }

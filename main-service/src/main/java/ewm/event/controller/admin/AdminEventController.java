@@ -31,7 +31,7 @@ public class AdminEventController {
 	public EventDto adminChangeEvent(@PathVariable Long eventId,
 									 @RequestBody @Valid UpdateEventDto eventDto) {
 		log.info("Изменить событие eventId = {}, поля -> {}", eventId, eventDto);
-		EventValidate.UpdateEventDateValidate(eventDto, log);
+		EventValidate.updateEventDateValidate(eventDto, log);
 		EventValidate.textLengthValidate(eventDto, log);
 		return eventService.adminChangeEvent(eventId, eventDto);
 	}

@@ -111,8 +111,8 @@ public class EventServiceImpl implements EventService {
 				end,
 				EventState.PUBLISHED,
 				requestParams.getOnlyAvailable(),
-				PageRequest.of(requestParams.getFrom() / requestParams.getSize()
-						, requestParams.getSize())
+				PageRequest.of(requestParams.getFrom() / requestParams.getSize(),
+						requestParams.getSize())
 		);
 
 		statisticsService.saveStats(request);
@@ -153,8 +153,8 @@ public class EventServiceImpl implements EventService {
 				requestParams.getCategories(),
 				requestParams.getRangeStart(),
 				requestParams.getRangeEnd(),
-				PageRequest.of(requestParams.getFrom() / requestParams.getSize()
-						, requestParams.getSize())
+				PageRequest.of(requestParams.getFrom() / requestParams.getSize(),
+						requestParams.getSize())
 		);
 		return EventMapper.mapToEventDto(events);
 	}
