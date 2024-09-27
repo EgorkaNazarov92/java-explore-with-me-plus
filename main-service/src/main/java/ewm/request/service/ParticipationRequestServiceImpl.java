@@ -31,6 +31,8 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         Event event = eventRepository.findById(eventId).orElseThrow(() ->
                 new NotFoundException("Событие с id=" + eventId + " не найдено"));
+        Long countConfirmedRequest = (long) requestRepository.findByEvent(eventId).size();
+        event.setConfirmedRequests(countConfirmedRequest);
 
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Инициатор не может участвовать в своём событии");
