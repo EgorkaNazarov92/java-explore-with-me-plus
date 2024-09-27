@@ -1,7 +1,9 @@
 package ewm.error;
 
+import ewm.error.exception.ConflictExceprion;
 import ewm.error.exception.ExistException;
 import ewm.error.exception.NotFoundException;
+import ewm.error.exception.ValidationException;
 import ewm.error.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,7 +28,7 @@ public class ErrorHandler {
     }
 
 
-    @ExceptionHandler({ExistException.class})
+    @ExceptionHandler({ExistException.class, ConflictExceprion.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleParameterConflict(final Exception e) {
         return new ErrorResponse(HttpStatus.CONFLICT,
@@ -39,6 +41,16 @@ public class ErrorHandler {
     public ErrorResponse handleException(final Exception e) {
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Произошла непредвиденная ошибка.",
+                e.getMessage()
+        );
+    }
+
+    @ExceptionHandler({ValidationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(final ValidationException e) {
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Ошибка валидации",
                 e.getMessage()
         );
     }
