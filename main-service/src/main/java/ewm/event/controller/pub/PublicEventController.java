@@ -3,6 +3,7 @@ package ewm.event.controller.pub;
 import ewm.event.EventService;
 import ewm.event.dto.EventDto;
 import ewm.event.dto.PublicGetEventRequestDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -28,7 +29,10 @@ public class PublicEventController {
 	}
 
 	@GetMapping("/{id}")
-	EventDto publicGetEvent(@PathVariable Long id) {
-		return eventService.publicGetEvent(id);
+	EventDto publicGetEvent(@PathVariable Long id,
+							HttpServletRequest request) {
+		String ip = request.getRemoteAddr();
+		String uri = request.getRequestURI();
+		return eventService.publicGetEvent(id, ip, uri);
 	}
 }

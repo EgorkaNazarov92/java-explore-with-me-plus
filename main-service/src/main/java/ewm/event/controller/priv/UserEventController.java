@@ -5,6 +5,7 @@ import ewm.event.dto.CreateEventDto;
 import ewm.event.dto.EventDto;
 import ewm.event.dto.UpdateEventDto;
 import ewm.event.validate.EventValidate;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,11 @@ public class UserEventController {
 
 	@GetMapping("/{id}")
 	EventDto getEvent(@PathVariable Long userId,
-					  @PathVariable Long id) {
-		return service.getEventById(userId, id);
+					  @PathVariable Long id,
+					  HttpServletRequest request) {
+		String ip = request.getRemoteAddr();
+		String uri = request.getRequestURI();
+		return service.getEventById(userId, id, ip, uri);
 	}
 
 	@ResponseStatus(HttpStatus.CREATED)

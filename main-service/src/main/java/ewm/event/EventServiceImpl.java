@@ -2,6 +2,7 @@ package ewm.event;
 
 import ewm.category.model.Category;
 import ewm.category.repository.CategoryRepository;
+import ewm.dto.EndpointHitDTO;
 import ewm.error.exception.ConflictExceprion;
 import ewm.error.exception.NotFoundException;
 import ewm.error.exception.ValidationException;
@@ -14,6 +15,7 @@ import ewm.event.mapper.EventMapper;
 import ewm.event.model.Event;
 import ewm.event.model.EventState;
 import ewm.event.model.StateAction;
+import ewm.stats.StatsClient;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +34,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository repository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final StatsClient statsClient;
 
     private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
 
@@ -44,12 +48,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventDto getEventById(Long userId, Long id) {
+    public EventDto getEventById(Long userId, Long id, String ip, String uri) {
         getUser(userId);
         Optional<Event> event = repository.findByIdAndInitiatorId(id, userId);
         if (event.isEmpty()) {
             throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
         }
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        statsClient.saveHit(EndpointHitDTO.builder()
+                .ip(ip)
+                        .uri(uri)
+                        .timestamp(dtf.format(LocalDateTime.now()))
+                        .app("ewm-main-service")
+                .build());
         return eventToDto(event.get());
     }
 
@@ -108,11 +119,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventDto publicGetEvent(Long id) {
+    public EventDto publicGetEvent(Long id, String ip, String uri) {
         Event event = getEvent(id);
         if(event.getState() != EventState.PUBLISHED){
             throw new NotFoundException("Событие не найдено");
         }
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        statsClient.saveHit(EndpointHitDTO.builder()
+                .ip(ip)
+                .uri(uri)
+                .timestamp(dtf.format(LocalDateTime.now()))
+                .app("ewm-main-service")
+                .build());
         return EventMapper.mapEventToEventDto(getEvent(id));
     }
 

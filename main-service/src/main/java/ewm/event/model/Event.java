@@ -26,7 +26,6 @@ public class Event {
 	@Column(columnDefinition = "VARCHAR(7000)")
 	private String description;
 	private LocalDateTime eventDate;
-	@ColumnDefault("false")
 	private Boolean paid;
 	private Integer participantLimit;
 	private LocalDateTime pablishedOn;
