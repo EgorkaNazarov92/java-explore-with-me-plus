@@ -1,6 +1,7 @@
 package ewm.event;
 
 import ewm.event.dto.*;
+import ewm.request.dto.RequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -21,4 +22,8 @@ public interface EventService {
 	List<EventDto> publicGetEvents(PublicGetEventRequestDto requestParams, HttpServletRequest request);
 
 	EventDto publicGetEvent(Long eventId, HttpServletRequest request);
+
+	List<RequestDto> getEventRequests(Long userId, Long eventId);
+
+	EventRequestStatusUpdateResult changeStatusEventRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 }
