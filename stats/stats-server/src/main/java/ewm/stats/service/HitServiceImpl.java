@@ -4,6 +4,7 @@ import ewm.dto.EndpointHitDTO;
 import ewm.dto.EndpointHitResponseDto;
 import ewm.dto.StatsRequestDTO;
 import ewm.dto.ViewStatsDTO;
+import ewm.stats.error.expection.BadRequestExceptions;
 import ewm.stats.mapper.HitMapper;
 import ewm.stats.model.Hit;
 import ewm.stats.repository.HitRepository;
@@ -21,6 +22,7 @@ import java.util.List;
 public class HitServiceImpl implements HitService {
     private final HitRepository hitRepository;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String ERROR_MESSAGE = "You need to pass start and end dates";
 
     @Override
     @Transactional
@@ -38,8 +40,14 @@ public class HitServiceImpl implements HitService {
 
     @Override
     public List<ViewStatsDTO> getAll(StatsRequestDTO statsRequestDTO) {
+        if (statsRequestDTO.getStart() == null || statsRequestDTO.getEnd() == null) {
+            throw new BadRequestExceptions(ERROR_MESSAGE);
+        }
         LocalDateTime start = LocalDateTime.parse(statsRequestDTO.getStart(), FORMATTER);
         LocalDateTime end = LocalDateTime.parse(statsRequestDTO.getEnd(), FORMATTER);
+        if (start.isAfter(end)) {
+            throw new BadRequestExceptions("Start date must be before end date");
+        }
         Boolean isUriExist = !statsRequestDTO.getUris().isEmpty();
         return Boolean.TRUE.equals(statsRequestDTO.getUnique()) ?
                 convertHitsToViewStatsDTO(hitRepository.findAllUniqueBetweenDatesAndByUri(start, end, isUriExist, statsRequestDTO.getUris())) :

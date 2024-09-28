@@ -1,5 +1,6 @@
 package ewm.stats.controller;
 
+import ewm.stats.error.expection.BadRequestExceptions;
 import ewm.stats.error.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -28,5 +29,11 @@ public class ErrorHandler {
             errors.add(fieldName + " - " + errorMessage);
         });
         return new ErrorResponse(e.getStatusCode().value(), errors);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BadRequestExceptions.class)
+    ErrorResponse handleBadRequestException(BadRequestExceptions e) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), List.of(e.getMessage()));
     }
 }
