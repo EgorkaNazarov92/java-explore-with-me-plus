@@ -11,18 +11,19 @@ import ewm.event.model.Event;
 import ewm.event.model.EventState;
 import ewm.event.model.RequestStatus;
 import ewm.event.model.StateAction;
+import ewm.request.dto.ParticipationRequestDto;
 import ewm.request.mapper.ParticipationRequestMapper;
 import ewm.request.model.ParticipationRequest;
 import ewm.request.repository.RequestRepository;
 import ewm.statistics.service.StatisticsService;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -312,66 +313,70 @@ public class EventServiceImpl implements EventService {
 		return uri + "/" + eventId;
 	}
 
-	public List<Event> mapEventIdsToEvents(List<Long> eventIds) {
-		if (eventIds == null) {
-			return Collections.emptyList();
-		}
-		return eventIds.stream()
-				.map(eventId -> repository.findById(eventId)
-						.orElseThrow(() -> new EntityNotFoundException("Событие с id= " + eventId + " не найдено")))
-				.collect(Collectors.toList());
-	}
+	@Transactional
+	public EventRequestStatusUpdateResultDto updateStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequestDto request) {
+		Event event = repository.findById(eventId)
+				.orElseThrow(() -> new NotFoundException("Событие с id= " + eventId + " не найдено"));
 
-	public EventRequestStatusUpdateResultDto updatStatusRequest(Long userId, Long eventId, EventRequestStatusUpdateRequestDto request){
-		Optional<Event> event = repository.findById(eventId);
-		if(event.isEmpty()){
-			throw new NotFoundException("Событие не найдено");
+		if (!event.getInitiator().getId().equals(userId)) {
+			throw new ConflictException("Только организатор может менять статусы заявок");
 		}
 
 		List<ParticipationRequest> requestList = requestRepository.findAllById(Arrays.stream(request.getRequestIds()).toList());
 		List<ParticipationRequest> fullRequestList = requestRepository.findByEvent(eventId);
 
-		if(RequestStatus.valueOf(request.getStatus()) == RequestStatus.REJECTED){
-
-			requestList.stream()
-					.forEach(x->{
-						if(RequestStatus.valueOf(x.getStatus()) != RequestStatus.PENDING){
-							throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
-						}
-						x.setStatus(RequestStatus.REJECTED.toString());
-						requestRepository.save(x);
-					});
-		}
-		if(RequestStatus.valueOf(request.getStatus()) == RequestStatus.REJECTED){
-			int confirmedRequestsCount = fullRequestList.stream()
-					.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.CONFIRMED)
-					.toList()
-					.size();
-			requestList.stream()
-					.forEach(x -> {
-						if(RequestStatus.valueOf(x.getStatus()) != RequestStatus.PENDING){
-							throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
-						}
-						if(requestRepository.findByEvent(eventId).size() >= event.get().getParticipantLimit()){
-							x.setStatus(RequestStatus.REJECTED.toString());
-						}else {
-							x.setStatus(RequestStatus.CONFIRMED.toString());
-						}
-						requestRepository.save(x);
-					});
+		if (RequestStatus.valueOf(request.getStatus()) == RequestStatus.REJECTED) {
+			for (ParticipationRequest req : requestList) {
+				if (RequestStatus.valueOf(req.getStatus()) != RequestStatus.PENDING) {
+					throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
+				}
+				req.setStatus(RequestStatus.REJECTED.toString());
+				requestRepository.save(req);
+			}
+		} else if (RequestStatus.valueOf(request.getStatus()) == RequestStatus.CONFIRMED) {
+			int confirmedRequestsCount = (int) fullRequestList.stream()
+					.filter(r -> RequestStatus.valueOf(r.getStatus()) == RequestStatus.CONFIRMED)
+					.count();
+			for (ParticipationRequest req : requestList) {
+				if (RequestStatus.valueOf(req.getStatus()) != RequestStatus.PENDING) {
+					throw new ConflictException("Можно менять статус заявки, только если она в статусе ожидания");
+				}
+				if (confirmedRequestsCount >= event.getParticipantLimit()) {
+					req.setStatus(RequestStatus.REJECTED.toString());
+				} else {
+					req.setStatus(RequestStatus.CONFIRMED.toString());
+					confirmedRequestsCount++;
+				}
+				requestRepository.save(req);
+			}
 		}
 
-		fullRequestList = requestRepository.findByEvent(eventId);
+		List<ParticipationRequest> updatedRequestList = requestRepository.findByEvent(eventId);
 		EventRequestStatusUpdateResultDto result = new EventRequestStatusUpdateResultDto();
-		result.setConfirmedRequests(fullRequestList.stream()
-				.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.CONFIRMED)
+
+		result.setConfirmedRequests(updatedRequestList.stream()
+				.filter(r -> RequestStatus.valueOf(r.getStatus()) == RequestStatus.CONFIRMED)
 				.map(ParticipationRequestMapper.INSTANCE::participationRequestToParticipationRequestDto)
-				.toList());
-		result.setRejectedRequests(fullRequestList.stream()
-				.filter(x->RequestStatus.valueOf(x.getStatus()) != RequestStatus.REJECTED)
+				.collect(Collectors.toList()));
+
+		result.setRejectedRequests(updatedRequestList.stream()
+				.filter(r -> RequestStatus.valueOf(r.getStatus()) == RequestStatus.REJECTED)
 				.map(ParticipationRequestMapper.INSTANCE::participationRequestToParticipationRequestDto)
-				.toList());
+				.collect(Collectors.toList()));
 
 		return result;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ParticipationRequestDto> getEventParticipants(Long userId, Long eventId) {
+		Optional<Event> eventOptional = repository.findByIdAndInitiatorId(eventId, userId);
+		if (eventOptional.isPresent()) {
+			List<ParticipationRequest> participationRequests = requestRepository.findByEvent(eventId);
+			return participationRequests.stream()
+					.map(ParticipationRequestMapper.INSTANCE::participationRequestToParticipationRequestDto)
+					.collect(Collectors.toList());
+		}
+		return List.of();
 	}
 }

@@ -3,11 +3,13 @@ package ewm.event.controller.priv;
 import ewm.event.EventService;
 import ewm.event.dto.*;
 import ewm.event.validate.EventValidate;
+import ewm.request.dto.ParticipationRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,11 +55,18 @@ public class UserEventController {
 	}
 
 	@PatchMapping("/{eventId}/requests")
-	EventRequestStatusUpdateResultDto updatStatusRequest(@PathVariable Long userId,
-														 @PathVariable Long eventId,
-														 @RequestBody EventRequestStatusUpdateRequestDto dto){
-		return service.updatStatusRequest(userId, eventId,dto);
+	EventRequestStatusUpdateResultDto updateStatusRequest(@PathVariable Long userId,
+														  @PathVariable Long eventId,
+														  @RequestBody EventRequestStatusUpdateRequestDto dto) {
+		return service.updateStatusRequest(userId, eventId, dto);
 	}
 
+	@GetMapping("/{eventId}/requests")
+	ResponseEntity<List<ParticipationRequestDto>> getEventParticipants(
+			@PathVariable Long userId,
+			@PathVariable Long eventId) {
+		List<ParticipationRequestDto> requests = service.getEventParticipants(userId, eventId);
+		return ResponseEntity.ok(requests);
+	}
 
 }
