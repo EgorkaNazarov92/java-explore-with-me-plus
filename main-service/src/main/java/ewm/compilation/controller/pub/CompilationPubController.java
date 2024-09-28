@@ -31,6 +31,5 @@ public class CompilationPubController {
 	public CompilationDtoResponse getCompilations(@PathVariable Long compId) {
 		log.info("Получить подбороку по compId --> {}", compId);
 		return compilationService.getCompilation(compId);
-
 	}
 }

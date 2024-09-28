@@ -1,10 +1,9 @@
 package ewm.event.controller.priv;
 
 import ewm.event.EventService;
-import ewm.event.dto.CreateEventDto;
-import ewm.event.dto.EventDto;
-import ewm.event.dto.UpdateEventDto;
+import ewm.event.dto.*;
 import ewm.event.validate.EventValidate;
+import ewm.request.dto.RequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,14 @@ public class UserEventController {
 		return service.getEvents(userId, from, size);
 	}
 
+	@ResponseStatus(HttpStatus.CREATED)
+	@PostMapping
+	EventDto createEvent(@PathVariable Long userId,
+						 @Valid @RequestBody CreateEventDto event) {
+		EventValidate.eventDateValidate(event, log);
+		return service.createEvent(userId, event);
+	}
+
 	@GetMapping("/{id}")
 	EventDto getEvent(@PathVariable Long userId,
 					  @PathVariable Long id,
@@ -35,14 +42,6 @@ public class UserEventController {
 		String ip = request.getRemoteAddr();
 		String uri = request.getRequestURI();
 		return service.getEventById(userId, id, ip, uri);
-	}
-
-	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping
-	EventDto createEvent(@PathVariable Long userId,
-						 @Valid @RequestBody CreateEventDto event) {
-		EventValidate.eventDateValidate(event, log);
-		return service.createEvent(userId, event);
 	}
 
 	@PatchMapping("/{eventId}")
@@ -54,5 +53,17 @@ public class UserEventController {
 		return service.updateEvent(userId, event, eventId);
 	}
 
+	@GetMapping("/{eventId}/requests")
+	List<RequestDto> getEventRequests(@PathVariable Long userId,
+									  @PathVariable Long eventId) {
+		return service.getEventRequests(userId, eventId);
+	}
 
+	@PatchMapping("/{eventId}/requests")
+	EventRequestStatusUpdateResult changeStatusEventRequests(@PathVariable Long userId,
+															 @PathVariable Long eventId,
+															 @RequestBody
+															 @Valid EventRequestStatusUpdateRequest request) {
+		return service.changeStatusEventRequests(userId, eventId, request);
+	}
 }

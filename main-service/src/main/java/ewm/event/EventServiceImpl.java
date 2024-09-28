@@ -10,6 +10,11 @@ import ewm.event.mapper.EventMapper;
 import ewm.event.model.Event;
 import ewm.event.model.EventState;
 import ewm.event.model.StateAction;
+import ewm.request.dto.RequestDto;
+import ewm.request.mapper.RequestMapper;
+import ewm.request.model.Request;
+import ewm.request.model.RequestStatus;
+import ewm.request.repository.RequestRepository;
 import ewm.statistics.service.StatisticsService;
 import ewm.user.model.User;
 import ewm.user.repository.UserRepository;
@@ -33,6 +38,7 @@ public class EventServiceImpl implements EventService {
 	private final UserRepository userRepository;
 	private final CategoryRepository categoryRepository;
 	private final StatisticsService statisticsService;
+	private final RequestRepository requestRepository;
 
 	private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
 
@@ -143,6 +149,41 @@ public class EventServiceImpl implements EventService {
 		event.setViews(views);
 		event = repository.save(event);
 		return EventMapper.mapEventToEventDto(event);
+	}
+
+	@Override
+	public List<RequestDto> getEventRequests(Long userId, Long eventId) {
+		getUser(userId);
+		getEvent(eventId);
+		return RequestMapper.INSTANCE.mapListRequests(requestRepository.findAllByEvent_id(eventId));
+	}
+
+	@Override
+	public EventRequestStatusUpdateResult changeStatusEventRequests(Long userId, Long eventId,
+																	EventRequestStatusUpdateRequest request) {
+		getUser(userId);
+		Event event = getEvent(eventId);
+		EventRequestStatusUpdateResult response = new EventRequestStatusUpdateResult();
+		List<Request> requests = requestRepository.findAllById(request.getRequestIds());
+		if (request.getStatus().equals(RequestStatus.REJECTED)) {
+			checkRequestsStatus(requests);
+			requests.stream()
+					.map(tmpReq -> changeStatus(tmpReq, RequestStatus.REJECTED))
+					.collect(Collectors.toList());
+			requestRepository.saveAll(requests);
+			response.setRejectedRequests(RequestMapper.INSTANCE.mapListRequests(requests));
+		} else {
+			if (requests.size() + event.getConfirmedRequests() > event.getParticipantLimit())
+				throw new ConflictExceprion("Превышен лимит заявок");
+			requests.stream()
+					.map(tmpReq -> changeStatus(tmpReq, RequestStatus.CONFIRMED))
+					.collect(Collectors.toList());
+			requestRepository.saveAll(requests);
+			event.setConfirmedRequests(event.getConfirmedRequests() + requests.size());
+			repository.save(event);
+			response.setConfirmedRequests(RequestMapper.INSTANCE.mapListRequests(requests));
+		}
+		return response;
 	}
 
 	@Override
@@ -306,5 +347,18 @@ public class EventServiceImpl implements EventService {
 
 	private String getUriForEvent(String uri, Long eventId) {
 		return uri + "/" + eventId;
+	}
+
+	private Request changeStatus(Request request, RequestStatus status) {
+		request.setStatus(status);
+		return request;
+	}
+
+	private void checkRequestsStatus(List<Request> requests) {
+		Optional<Request> confirmedReq = requests.stream()
+				.filter(request -> request.getStatus().equals(RequestStatus.CONFIRMED))
+				.findFirst();
+		if (confirmedReq.isPresent())
+			throw new ConflictExceprion("Нельзя отменить, уже принятую заявку.");
 	}
 }

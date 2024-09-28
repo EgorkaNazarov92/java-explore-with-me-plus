@@ -49,6 +49,7 @@ public class EventMapper {
 				.initiator(UserMapper.mapToUserDto(event.getInitiator()))
 				.requestModeration(event.getRequestModeration())
 				.views((event.getViews() == null) ? 0L : event.getViews())
+				.confirmedRequests(event.getConfirmedRequests())
 				.build();
 		return dto;
 	}
