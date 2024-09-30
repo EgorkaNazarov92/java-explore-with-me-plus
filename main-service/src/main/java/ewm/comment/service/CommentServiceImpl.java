@@ -25,6 +25,8 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    private static final String COMMENT_NOT_FOUND = "Comment not found";
+
     @Override
     @Transactional
     public CommentDto addComment(Long userId, Long eventId, CreateCommentDto createCommentDto) {
@@ -39,6 +41,17 @@ public class CommentServiceImpl implements CommentService {
 
         Comment saved = commentRepository.save(comment);
         return CommentMapper.INSTANCE.commentToCommentDto(saved);
+    }
+
+    @Override
+    public CommentDto getUserComment(Long userId, Long eventId, Long commentId) {
+        getUserById(userId);
+        getEventById(eventId);
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new NotFoundException(COMMENT_NOT_FOUND);
+        }
+        return CommentMapper.INSTANCE.commentToCommentDto(optionalComment.get());
     }
 
     @Override
@@ -58,6 +71,35 @@ public class CommentServiceImpl implements CommentService {
                 .stream()
                 .map(CommentMapper.INSTANCE::commentToCommentDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public CommentDto updateComment(Long userId, Long eventId, Long commentId, CreateCommentDto createCommentDto) {
+        User user = getUserById(userId);
+        Event event = getEventById(eventId);
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new NotFoundException(COMMENT_NOT_FOUND);
+        }
+        Comment comment = optionalComment.get().toBuilder()
+                .author(user)
+                .event(event)
+                .content(createCommentDto.getContent())
+                .build();
+        return CommentMapper.INSTANCE.commentToCommentDto(commentRepository.save(comment));
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long userId, Long eventId, Long commentId) {
+        getUserById(userId);
+        getEventById(eventId);
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new NotFoundException(COMMENT_NOT_FOUND);
+        }
+        commentRepository.deleteById(commentId);
     }
 
     private User getUserById(Long userId) {
