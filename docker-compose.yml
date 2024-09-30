@@ -25,8 +25,8 @@ services:
 
   ewm-service:
     build: main-service
-    image: explore-with-me-main-service
-    container_name: explore-with-me-main-service
+    image: main_service_image
+    container_name: main_service_container
     ports:
       - "8080:8080"
     depends_on:
@@ -40,3 +40,10 @@ services:
 
   ewm-db:
     image: postgres:16.1
+    container_name: ewm-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=test
+      - POSTGRES_DB=ewm_main
