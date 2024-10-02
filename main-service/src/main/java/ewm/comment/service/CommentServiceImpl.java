@@ -5,6 +5,7 @@ import ewm.comment.dto.CreateCommentDto;
 import ewm.comment.mapper.CommentMapper;
 import ewm.comment.model.Comment;
 import ewm.comment.repository.CommentRepository;
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.NotFoundException;
 import ewm.event.EventRepository;
 import ewm.event.model.Event;
@@ -45,14 +46,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto getUserComment(Long userId, Long eventId, Long commentId) {
+    public CommentDto getComment(Long eventId, Long commentId) {
         getEventById(eventId);
-        Comment comment = getCommentById(commentId);
-        User user = getUserById(userId);
-        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
-            throw new NotFoundException(COMMENT_NOT_FOUND);
-        }
-        return CommentMapper.INSTANCE.commentToCommentDto(comment);
+        return CommentMapper.INSTANCE.commentToCommentDto(getCommentById(commentId));
     }
 
     @Override
@@ -81,7 +77,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = getCommentById(commentId);
         User user = getUserById(userId);
         if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
-            throw new NotFoundException(COMMENT_NOT_FOUND);
+            throw new ConflictException("This user can't update comment");
         }
         comment.setContent(createCommentDto.getContent());
         return CommentMapper.INSTANCE.commentToCommentDto(commentRepository.save(comment));
@@ -94,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = getCommentById(commentId);
         User user = getUserById(userId);
         if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
-            throw new NotFoundException(COMMENT_NOT_FOUND);
+            throw new ConflictException("This user can't delete comment");
         }
         commentRepository.deleteById(commentId);
     }

@@ -22,8 +22,9 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
     private static final String PRIVATE_PATH = "/users/{userId}/events/{eventId}/comments";
+    private static final String PUBLIC_PATH = "/events/{eventId}/comments";
 
-    @GetMapping("/events/{eventId}/comments")
+    @GetMapping(PUBLIC_PATH)
     public List<CommentDto> getEventComments(@PathVariable Long eventId) {
         return commentService.getEventComments(eventId);
     }
@@ -43,13 +44,12 @@ public class CommentController {
         return commentService.addComment(userId, eventId, createCommentDto);
     }
 
-    @GetMapping(PRIVATE_PATH + "/{commentId}")
-    public CommentDto getUserComment(
-            @PathVariable Long userId,
+    @GetMapping(PUBLIC_PATH + "/{commentId}")
+    public CommentDto getComment(
             @PathVariable Long eventId,
             @PathVariable Long commentId
     ) {
-        return commentService.getUserComment(userId, eventId, commentId);
+        return commentService.getComment(eventId, commentId);
     }
 
 
