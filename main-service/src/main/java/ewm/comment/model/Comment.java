@@ -22,7 +22,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

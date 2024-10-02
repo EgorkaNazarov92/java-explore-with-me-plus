@@ -5,6 +5,7 @@ import ewm.comment.dto.CreateCommentDto;
 import ewm.comment.mapper.CommentMapper;
 import ewm.comment.model.Comment;
 import ewm.comment.repository.CommentRepository;
+import ewm.error.exception.ConflictException;
 import ewm.error.exception.NotFoundException;
 import ewm.event.EventRepository;
 import ewm.event.model.Event;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
+
+    private static final String COMMENT_NOT_FOUND = "Comment not found";
 
     @Override
     @Transactional
@@ -39,6 +43,12 @@ public class CommentServiceImpl implements CommentService {
 
         Comment saved = commentRepository.save(comment);
         return CommentMapper.INSTANCE.commentToCommentDto(saved);
+    }
+
+    @Override
+    public CommentDto getComment(Long eventId, Long commentId) {
+        getEventById(eventId);
+        return CommentMapper.INSTANCE.commentToCommentDto(getCommentById(commentId));
     }
 
     @Override
@@ -60,6 +70,31 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public CommentDto updateComment(Long userId, Long eventId, Long commentId, CreateCommentDto createCommentDto) {
+        getEventById(eventId);
+        Comment comment = getCommentById(commentId);
+        User user = getUserById(userId);
+        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
+            throw new ConflictException("This user can't update comment");
+        }
+        comment.setContent(createCommentDto.getContent());
+        return CommentMapper.INSTANCE.commentToCommentDto(commentRepository.save(comment));
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long userId, Long eventId, Long commentId) {
+        getEventById(eventId);
+        Comment comment = getCommentById(commentId);
+        User user = getUserById(userId);
+        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
+            throw new ConflictException("This user can't delete comment");
+        }
+        commentRepository.deleteById(commentId);
+    }
+
     private User getUserById(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
@@ -74,5 +109,13 @@ public class CommentServiceImpl implements CommentService {
             throw new NotFoundException("Event not found");
         }
         return optionalEvent.get();
+    }
+
+    private Comment getCommentById(Long commentId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new NotFoundException(COMMENT_NOT_FOUND);
+        }
+        return optionalComment.get();
     }
 }
