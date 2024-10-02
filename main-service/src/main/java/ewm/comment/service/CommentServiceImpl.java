@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -45,13 +46,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getUserComment(Long userId, Long eventId, Long commentId) {
-        getUserById(userId);
         getEventById(eventId);
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty()) {
+        Comment comment = getCommentById(commentId);
+        User user = getUserById(userId);
+        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
             throw new NotFoundException(COMMENT_NOT_FOUND);
         }
-        return CommentMapper.INSTANCE.commentToCommentDto(optionalComment.get());
+        return CommentMapper.INSTANCE.commentToCommentDto(comment);
     }
 
     @Override
@@ -76,27 +77,23 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto updateComment(Long userId, Long eventId, Long commentId, CreateCommentDto createCommentDto) {
+        getEventById(eventId);
+        Comment comment = getCommentById(commentId);
         User user = getUserById(userId);
-        Event event = getEventById(eventId);
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty()) {
+        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
             throw new NotFoundException(COMMENT_NOT_FOUND);
         }
-        Comment comment = optionalComment.get().toBuilder()
-                .author(user)
-                .event(event)
-                .content(createCommentDto.getContent())
-                .build();
+        comment.setContent(createCommentDto.getContent());
         return CommentMapper.INSTANCE.commentToCommentDto(commentRepository.save(comment));
     }
 
     @Override
     @Transactional
     public void deleteComment(Long userId, Long eventId, Long commentId) {
-        getUserById(userId);
         getEventById(eventId);
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty()) {
+        Comment comment = getCommentById(commentId);
+        User user = getUserById(userId);
+        if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
             throw new NotFoundException(COMMENT_NOT_FOUND);
         }
         commentRepository.deleteById(commentId);
@@ -116,5 +113,13 @@ public class CommentServiceImpl implements CommentService {
             throw new NotFoundException("Event not found");
         }
         return optionalEvent.get();
+    }
+
+    private Comment getCommentById(Long commentId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
+            throw new NotFoundException(COMMENT_NOT_FOUND);
+        }
+        return optionalComment.get();
     }
 }
